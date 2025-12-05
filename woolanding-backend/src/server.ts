@@ -2,6 +2,10 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import routes from './routes';
+import { errorHandler } from './middleware/errorHandler';
+import { apiLimiter } from './middleware/rateLimiter';
+import { testConnection } from './utils/database';
 
 // Load environment variables
 dotenv.config();
@@ -25,6 +29,9 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
   next();
 });
+
+// Rate limiting for API routes
+app.use(`/${API_VERSION}`, apiLimiter);
 
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {
@@ -231,18 +238,46 @@ app.get('/', (_req: Request, res: Response) => {
   res.status(200).send(html);
 });
 
-// API base route
+// Mount API routes
+app.use(`/${API_VERSION}`, routes);
+
+// API base route - documentation
 app.get(`/${API_VERSION}`, (_req: Request, res: Response) => {
   res.status(200).json({
     message: 'WooLanding AI Generator API',
     version: API_VERSION,
+    status: 'active',
     endpoints: {
       health: '/health',
       auth: `/${API_VERSION}/auth`,
-      apiKeys: `/${API_VERSION}/api-keys`,
-      generate: `/${API_VERSION}/generate`,
-      subscription: `/${API_VERSION}/subscription`,
       user: `/${API_VERSION}/user`,
+      generate: `/${API_VERSION}/generate`,
+      plans: `/${API_VERSION}/plans`,
+    },
+    documentation: {
+      auth: {
+        register: `POST /${API_VERSION}/auth/register`,
+        login: `POST /${API_VERSION}/auth/login`,
+        refresh: `POST /${API_VERSION}/auth/refresh`,
+        me: `GET /${API_VERSION}/auth/me`,
+        changePassword: `POST /${API_VERSION}/auth/change-password`,
+      },
+      user: {
+        profile: `GET /${API_VERSION}/user/profile`,
+        updateProfile: `PUT /${API_VERSION}/user/profile`,
+        stats: `GET /${API_VERSION}/user/stats`,
+        deleteAccount: `DELETE /${API_VERSION}/user/account`,
+      },
+      generate: {
+        create: `POST /${API_VERSION}/generate`,
+        history: `GET /${API_VERSION}/generate/history`,
+        getById: `GET /${API_VERSION}/generate/:id`,
+      },
+      plans: {
+        all: `GET /${API_VERSION}/plans`,
+        byId: `GET /${API_VERSION}/plans/:id`,
+        bySlug: `GET /${API_VERSION}/plans/slug/:slug`,
+      },
     },
   });
 });
@@ -250,22 +285,17 @@ app.get(`/${API_VERSION}`, (_req: Request, res: Response) => {
 // 404 handler
 app.use((req: Request, res: Response) => {
   res.status(404).json({
+    success: false,
     error: 'Not Found',
     message: `Route ${req.method} ${req.path} not found`,
   });
 });
 
-// Error handler
-app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error('Error:', err);
-  res.status(500).json({
-    error: 'Internal Server Error',
-    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
-  });
-});
+// Global error handler (must be last)
+app.use(errorHandler);
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log('╔═══════════════════════════════════════════════════════╗');
   console.log('║                                                       ║');
   console.log('║       🚀 WooLanding AI Generator API Server          ║');
@@ -276,7 +306,26 @@ app.listen(PORT, () => {
   console.log(`  ➜ Port: ${PORT}`);
   console.log(`  ➜ API Version: ${API_VERSION}`);
   console.log(`  ➜ URL: http://localhost:${PORT}`);
+  console.log(`  ➜ API: http://localhost:${PORT}/${API_VERSION}`);
   console.log(`  ➜ Health Check: http://localhost:${PORT}/health`);
+  console.log('');
+
+  // Test database connection
+  console.log('  🔌 Testing database connection...');
+  const dbConnected = await testConnection();
+  if (dbConnected) {
+    console.log('  ✓ Database connection successful');
+  } else {
+    console.log('  ✗ Database connection failed');
+    console.log('  ⚠️  API will run but database operations will fail');
+  }
+
+  console.log('');
+  console.log('  📚 Available Routes:');
+  console.log(`     - POST /${API_VERSION}/auth/register - Register new user`);
+  console.log(`     - POST /${API_VERSION}/auth/login - User login`);
+  console.log(`     - POST /${API_VERSION}/generate - Generate landing page`);
+  console.log(`     - GET  /${API_VERSION}/plans - Get pricing plans`);
   console.log('');
   console.log('  Press Ctrl+C to stop the server');
   console.log('');
