@@ -1,0 +1,201 @@
+/**
+ * Admin Styles for WooLanding AI Generator
+ *
+ * @package WooLanding_AI_Generator
+ */
+
+/* Metabox Styles */
+.wlag-metabox-content {
+    font-size: 13px;
+}
+
+.wlag-metabox-content .wlag-description {
+    color: #646970;
+    line-height: 1.5;
+}
+
+.wlag-metabox-content ol {
+    color: #646970;
+    line-height: 1.6;
+}
+
+/* Generate Button */
+#wlag-generate-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+#wlag-generate-btn .dashicons {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+}
+
+#wlag-generate-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Loading Animation */
+#wlag-generate-btn.loading .dashicons {
+    animation: wlag-spin 1s linear infinite;
+}
+
+@keyframes wlag-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Status Message Styles */
+.wlag-status-message {
+    margin-top: 10px;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.5;
+    animation: wlag-fade-in 0.3s ease-in;
+}
+
+@keyframes wlag-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.wlag-status-message.loading {
+    background: #f0f6fc;
+    border-left: 3px solid #2271b1;
+    color: #2c3338;
+}
+
+.wlag-status-message.loading::before {
+    content: "\f463";
+    font-family: dashicons;
+    display: inline-block;
+    margin-right: 5px;
+    animation: wlag-spin 1s linear infinite;
+}
+
+.wlag-status-message.success {
+    background: #edfaef;
+    border-left: 3px solid #00a32a;
+    color: #2c3338;
+}
+
+.wlag-status-message.success::before {
+    content: "\f147";
+    font-family: dashicons;
+    display: inline-block;
+    margin-right: 5px;
+    color: #00a32a;
+}
+
+.wlag-status-message.error {
+    background: #fcf0f1;
+    border-left: 3px solid #d63638;
+    color: #2c3338;
+}
+
+.wlag-status-message.error::before {
+    content: "\f534";
+    font-family: dashicons;
+    display: inline-block;
+    margin-right: 5px;
+    color: #d63638;
+}
+
+.wlag-status-message a {
+    color: #2271b1;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.wlag-status-message a:hover {
+    color: #135e96;
+    text-decoration: underline;
+}
+
+/* Existing Page Notice */
+.wlag-existing-page {
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #f0f6fc;
+    border-left: 3px solid #2271b1;
+    border-radius: 4px;
+}
+
+.wlag-existing-page p {
+    margin: 0 0 8px 0;
+}
+
+.wlag-existing-page p:last-child {
+    margin-bottom: 0;
+    font-size: 12px;
+    color: #646970;
+}
+
+/* Info Box */
+.wlag-info {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #646970;
+}
+
+.wlag-info strong {
+    color: #2c3338;
+}
+
+.wlag-info ol {
+    margin: 5px 0 0 0;
+    padding-left: 20px;
+}
+
+.wlag-info ol li {
+    margin-bottom: 3px;
+}
+
+/* Settings Page Styles */
+.wlag-settings-info {
+    max-width: 800px;
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-left: 4px solid #2271b1;
+    border-radius: 4px;
+}
+
+.wlag-settings-info h2,
+.wlag-settings-info h3 {
+    margin-top: 0;
+}
+
+.wlag-settings-info ol,
+.wlag-settings-info ul {
+    line-height: 1.8;
+}
+
+/* Responsive */
+@media screen and (max-width: 782px) {
+    #wlag-generate-btn {
+        padding: 10px;
+    }
+
+    .wlag-metabox-content {
+        font-size: 14px;
+    }
+}
