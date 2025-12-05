@@ -62,9 +62,7 @@ export async function register(req: Request, res: Response): Promise<void> {
 
     // Create user
     const newUser = await UserModel.create({
-      email: userData.email,
-      name: userData.name,
-      companyName: userData.companyName,
+      ...userData,
       passwordHash,
     });
 

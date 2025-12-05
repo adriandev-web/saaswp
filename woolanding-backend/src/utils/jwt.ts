@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { JWTPayload } from '../types';
 
 // JWT Configuration
@@ -17,25 +17,26 @@ export function generateAccessToken(userId: string, email: string, plan?: string
     plan,
   };
 
-  return jwt.sign(payload, JWT_SECRET, {
+  const options: SignOptions = {
     expiresIn: JWT_EXPIRES_IN,
     issuer: 'woolanding-api',
     audience: 'woolanding-client',
-  });
+  };
+
+  return jwt.sign(payload, JWT_SECRET, options);
 }
 
 /**
  * Generate JWT refresh token
  */
 export function generateRefreshToken(userId: string): string {
-  return jwt.sign(
-    { sub: userId, type: 'refresh' },
-    JWT_REFRESH_SECRET,
-    {
-      expiresIn: JWT_REFRESH_EXPIRES_IN,
-      issuer: 'woolanding-api',
-    }
-  );
+  const payload = { sub: userId, type: 'refresh' };
+  const options: SignOptions = {
+    expiresIn: JWT_REFRESH_EXPIRES_IN,
+    issuer: 'woolanding-api',
+  };
+
+  return jwt.sign(payload, JWT_REFRESH_SECRET, options);
 }
 
 /**
