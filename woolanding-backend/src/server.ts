@@ -2,6 +2,7 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import path from 'path';
 import authRoutes from './routes/authRoutes';
 
 // Load environment variables
@@ -13,7 +14,9 @@ const PORT = process.env.PORT || 3000;
 const API_VERSION = process.env.API_VERSION || 'v1';
 
 // Middleware
-app.use(helmet()); // Security headers
+app.use(helmet({
+  contentSecurityPolicy: false, // Disable CSP for inline styles in HTML pages
+})); // Security headers
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3001',
   credentials: true,
@@ -21,10 +24,18 @@ app.use(cors({
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, '../public')));
+
 // Request logging middleware
 app.use((req: Request, _res: Response, next: NextFunction) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
   next();
+});
+
+// Root redirect to login
+app.get('/', (_req: Request, res: Response) => {
+  res.redirect('/login.html');
 });
 
 // Health check endpoint
@@ -85,8 +96,14 @@ app.listen(PORT, () => {
   console.log(`  ➜ Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`  ➜ Port: ${PORT}`);
   console.log(`  ➜ API Version: ${API_VERSION}`);
-  console.log(`  ➜ URL: http://localhost:${PORT}`);
-  console.log(`  ➜ Health Check: http://localhost:${PORT}/health`);
+  console.log('');
+  console.log('  📱 Frontend:');
+  console.log(`     • Login: http://localhost:${PORT}/login.html`);
+  console.log(`     • Dashboard: http://localhost:${PORT}/dashboard.html`);
+  console.log('');
+  console.log('  🔌 API Endpoints:');
+  console.log(`     • Health: http://localhost:${PORT}/health`);
+  console.log(`     • Auth: http://localhost:${PORT}/${API_VERSION}/auth`);
   console.log('');
   console.log('  Press Ctrl+C to stop the server');
   console.log('');
