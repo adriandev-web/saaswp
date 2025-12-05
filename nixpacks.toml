@@ -2,10 +2,16 @@
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["cd woolanding-backend && npm ci"]
+cmds = [
+  "cd woolanding-frontend && npm ci",
+  "cd ../woolanding-backend && npm ci"
+]
 
 [phases.build]
-cmds = ["cd woolanding-backend && npm run build"]
+cmds = [
+  "cd woolanding-frontend && npm run build",
+  "cd ../woolanding-backend && npm run build"
+]
 
 [start]
 cmd = "cd woolanding-backend && npm start"

@@ -2,6 +2,7 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import path from 'path';
 import routes from './routes';
 import { errorHandler } from './middleware/errorHandler';
 import { apiLimiter } from './middleware/rateLimiter';
@@ -16,9 +17,14 @@ const PORT = process.env.PORT || 3000;
 const API_VERSION = process.env.API_VERSION || 'v1';
 
 // Middleware
-app.use(helmet()); // Security headers
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Disable for React app
+    crossOriginEmbedderPolicy: false,
+  })
+);
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+  origin: process.env.FRONTEND_URL || '*',
   credentials: true,
 }));
 app.use(express.json()); // Parse JSON bodies
@@ -33,6 +39,10 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 // Rate limiting for API routes
 app.use(`/${API_VERSION}`, apiLimiter);
 
+// Serve static files from frontend build (if exists)
+const frontendPath = path.join(__dirname, '../../woolanding-frontend/dist');
+app.use(express.static(frontendPath));
+
 // Health check endpoint
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({
@@ -44,7 +54,24 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
-// Root route - HTML landing page
+// Serve frontend for all non-API routes (SPA fallback)
+app.get('*', (req: Request, res: Response, next: NextFunction) => {
+  // Skip if it's an API route
+  if (req.path.startsWith(`/${API_VERSION}`) || req.path === '/health') {
+    return next();
+  }
+
+  // Try to serve frontend index.html
+  const indexPath = path.join(frontendPath, 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      // If frontend not found, show default HTML landing page
+      next();
+    }
+  });
+});
+
+// Fallback root route - HTML landing page (if frontend not available)
 app.get('/', (_req: Request, res: Response) => {
   const html = `
     <!DOCTYPE html>
