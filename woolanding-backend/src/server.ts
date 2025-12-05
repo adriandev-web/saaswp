@@ -37,6 +37,20 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
+// Root route
+app.get('/', (_req: Request, res: Response) => {
+  res.status(200).json({
+    message: 'WooLanding AI Generator API',
+    version: API_VERSION,
+    status: 'running',
+    endpoints: {
+      health: '/health',
+      api: `/${API_VERSION}`,
+    },
+    documentation: `/${API_VERSION}`,
+  });
+});
+
 // API base route
 app.get(`/${API_VERSION}`, (_req: Request, res: Response) => {
   res.status(200).json({
