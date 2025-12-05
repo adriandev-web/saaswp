@@ -2,6 +2,7 @@ import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import authRoutes from './routes/authRoutes';
 
 // Load environment variables
 dotenv.config();
@@ -52,6 +53,9 @@ app.get(`/${API_VERSION}`, (_req: Request, res: Response) => {
     },
   });
 });
+
+// Mount routes
+app.use(`/${API_VERSION}/auth`, authRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
